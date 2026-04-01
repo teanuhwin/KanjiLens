@@ -25,6 +25,7 @@
     --accent: #c8a96e;
     --accent2: #7eb8c9;
     --red: #e05c5c;
+    --green: #6ec88a;
     --radius: 12px;
     --radius-lg: 20px;
   }
@@ -41,7 +42,6 @@
     overflow-x: hidden;
   }
 
-  /* ── HEADER ── */
   header {
     display: flex;
     align-items: center;
@@ -52,635 +52,264 @@
     top: 0;
     z-index: 100;
     background: var(--bg);
-    backdrop-filter: blur(12px);
   }
 
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-
+  .logo { display: flex; align-items: baseline; gap: 10px; }
   .logo-kanji {
     font-family: 'Shippori Mincho', serif;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: -0.5px;
+    font-size: 22px; font-weight: 600;
+    color: var(--accent); letter-spacing: -0.5px;
   }
-
   .logo-roman {
-    font-size: 10px;
-    letter-spacing: 0.25em;
+    font-size: 10px; letter-spacing: 0.25em;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  #init-status {
+    font-size: 10px; letter-spacing: 0.08em;
     color: var(--text-dim);
-    text-transform: uppercase;
-  }
-
-  .header-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .icon-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    padding: 4px 10px; border-radius: 50px;
     border: 1px solid var(--border);
     background: var(--bg2);
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.3s;
   }
-  .icon-btn:active { transform: scale(0.93); }
-  .icon-btn.active { border-color: var(--accent); color: var(--accent); }
+  #init-status.ready  { border-color: var(--green); color: var(--green); }
+  #init-status.error  { border-color: var(--red);   color: var(--red);   }
 
-  /* ── NAV TABS ── */
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .dot.pulse { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
   nav {
     display: flex;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
-    position: sticky;
-    top: 57px;
-    z-index: 99;
+    position: sticky; top: 57px; z-index: 99;
   }
-
   .tab {
-    flex: 1;
-    padding: 12px 8px;
-    text-align: center;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.2s;
+    flex: 1; padding: 12px 8px; text-align: center;
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text-dim); cursor: pointer; transition: all 0.2s;
     border-bottom: 2px solid transparent;
-    position: relative;
   }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  .tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
+  main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-  /* ── MAIN CONTENT ── */
-  main {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .screen {
-    display: none;
-    padding: 20px;
-    animation: fadeIn 0.25s ease;
-  }
+  .screen { display: none; padding: 20px; animation: fadeIn 0.25s ease; }
   .screen.active { display: block; }
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── SCAN SCREEN ── */
+  /* HTTPS warning */
+  .https-warn {
+    display: none;
+    padding: 12px 14px; border-radius: var(--radius);
+    background: rgba(224,92,92,0.1);
+    border: 1px solid var(--red); color: var(--red);
+    font-size: 11px; line-height: 1.6; letter-spacing: 0.04em;
+    margin-bottom: 14px;
+  }
+  .https-warn.visible { display: block; }
+
+  /* Capture zone */
   .capture-zone {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4/3;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    position: relative; width: 100%; aspect-ratio: 4/3;
+    border-radius: var(--radius-lg); overflow: hidden;
+    background: var(--bg2); border: 1px solid var(--border);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; margin-bottom: 16px;
   }
+  .capture-zone.has-image { background: #000; cursor: default; }
 
-  .capture-zone.has-image { background: #000; }
-
+  /* FIX: canvas doesn't support object-fit; scaled via drawImage in JS */
   #preview-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
     display: none;
   }
-
   #preview-canvas.visible { display: block; }
 
   .capture-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-dim);
-    pointer-events: none;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+    color: var(--text-dim); pointer-events: none;
   }
-
   .capture-placeholder svg { opacity: 0.4; }
-
-  .capture-placeholder span {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
+  .capture-placeholder span { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
 
   #camera-input { display: none; }
 
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .btn {
-    flex: 1;
-    padding: 14px 16px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0f1117;
-    font-weight: 600;
-  }
-  .btn:disabled {
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
-  /* ── OCR STATUS ── */
-  .ocr-status {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: var(--radius);
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    margin-bottom: 14px;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-  .ocr-status.visible { display: flex; }
-
-  .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .confidence-bar {
-    flex: 1;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .confidence-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    background: var(--accent2);
-  }
-  .confidence-fill.low { background: var(--red); }
-
-  /* ── OCR TEXT AREA ── */
-  .field-label {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-
-  #ocr-text {
-    width: 100%;
-    min-height: 80px;
-    padding: 14px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    color: var(--text);
-    font-family: 'Shippori Mincho', serif;
-    font-size: 22px;
-    line-height: 1.7;
-    resize: none;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 14px;
-  }
-  #ocr-text:focus { border-color: var(--border-strong); }
-  #ocr-text::placeholder {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--text-dim);
-  }
-
-  /* ── RESULTS CARD ── */
-  .results-card {
-    display: none;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-strong);
-    background: var(--bg2);
-    overflow: hidden;
-    margin-bottom: 16px;
-    animation: fadeIn 0.3s ease;
-  }
-  .results-card.visible { display: block; }
-
-  .result-section {
-    padding: 16px 18px;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-  .result-section:last-child { border-bottom: none; }
-
-  .result-label {
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-  }
-
-  .result-kanji {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 28px;
-    font-weight: 500;
-    line-height: 1.5;
-    color: var(--text);
-    word-break: break-all;
-  }
-
-  .result-kana {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 1.6;
-    color: var(--accent);
-  }
-
-  .result-romaji {
-    font-family: 'DM Mono', monospace;
-    font-size: 16px;
-    font-weight: 300;
-    line-height: 1.6;
-    color: var(--accent2);
-    letter-spacing: 0.03em;
-  }
-
-  .copy-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 28px;
-    height: 28px;
-    border-radius: 7px;
-    border: 1px solid var(--border);
-    background: var(--bg3);
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 12px;
-  }
-  .copy-btn:active { transform: scale(0.9); }
-  .copy-btn.copied { border-color: var(--accent); color: var(--accent); }
-
-  .token-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 16px 18px;
-  }
-
-  .token-chip {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    cursor: default;
-    transition: border-color 0.15s;
-  }
-  .token-chip:hover { border-color: var(--border-strong); }
-
-  .chip-kanji {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 18px;
-  }
-
-  .chip-kana {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 11px;
-    color: var(--accent);
-  }
-
-  .chip-romaji {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--accent2);
-    letter-spacing: 0.05em;
-  }
-
-  /* ── HISTORY SCREEN ── */
-  .history-empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dim);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-  }
-
-  .history-empty .big-kanji {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 48px;
-    display: block;
-    margin-bottom: 16px;
-    opacity: 0.2;
-  }
-
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .history-item {
-    padding: 14px 16px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .history-item:active { transform: scale(0.99); }
-
-  .history-kanji {
-    font-family: 'Shippori Mincho', serif;
-    font-size: 20px;
-    margin-bottom: 4px;
-  }
-
-  .history-sub {
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
-  }
-
-  .history-kana {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 13px;
-    color: var(--accent);
-  }
-
-  .history-romaji {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent2);
-  }
-
-  .history-time {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-
-  .history-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .history-title {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .clear-btn {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--red);
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    background: none;
-    font-family: 'DM Mono', monospace;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-  }
-  .clear-btn:active { opacity: 1; }
-
-  /* ── ABOUT SCREEN ── */
-  .about-section {
-    margin-bottom: 24px;
-  }
-
-  .about-title {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .about-text {
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--text-mid);
-    letter-spacing: 0.02em;
-  }
-
-  .about-text p { margin-bottom: 10px; }
-
-  .tech-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .tech-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    background: var(--bg2);
-    border: 1px solid var(--border);
-  }
-
-  .tech-name {
-    font-size: 12px;
-    color: var(--text);
-  }
-
-  .tech-role {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-  }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--bg3);
-    border: 1px solid var(--border-strong);
-    color: var(--text);
-    padding: 10px 18px;
-    border-radius: 50px;
-    font-size: 12px;
-    letter-spacing: 0.05em;
-    opacity: 0;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 200;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* ── OFFLINE BADGE ── */
-  .offline-badge {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--text-dim);
-    margin-bottom: 14px;
-  }
-  .offline-badge.visible { display: flex; }
-  .offline-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--red);
-    flex-shrink: 0;
-  }
-
-  /* ── SWIPE DELETE (history) ── */
-  .history-item-wrap {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius);
-  }
-  .history-delete-bg {
-    position: absolute;
-    inset: 0;
-    background: var(--red);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 20px;
-    color: white;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    border-radius: var(--radius);
-  }
-
-  /* ── LOADING OVERLAY ── */
-  .loading-overlay {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(15,17,23,0.85);
-    border-radius: var(--radius-lg);
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
-    z-index: 10;
-  }
-  .loading-overlay.visible { display: flex; }
-  .loading-overlay .spinner {
-    width: 28px;
-    height: 28px;
-    border-width: 3px;
-  }
-  .loading-overlay span {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--text-dim);
-  }
-
-  /* ── HORIZONTAL RULE ── */
-  hr.divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 16px 0;
-  }
-
-  /* Decorative corner in capture zone */
   .corner-decorator {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border-color: var(--accent);
-    border-style: solid;
-    opacity: 0.5;
+    position: absolute; width: 24px; height: 24px;
+    border-color: var(--accent); border-style: solid;
+    opacity: 0.5; pointer-events: none;
   }
   .corner-decorator.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
   .corner-decorator.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
   .corner-decorator.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
   .corner-decorator.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
 
+  .btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .btn {
+    flex: 1; padding: 14px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg2); color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #0f1117; font-weight: 600; }
+  .btn:disabled { opacity: 0.35; pointer-events: none; }
+
+  .ocr-status {
+    display: none; align-items: center; gap: 10px;
+    padding: 12px 14px; border-radius: var(--radius);
+    background: var(--bg2); border: 1px solid var(--border);
+    margin-bottom: 14px; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.05em;
+  }
+  .ocr-status.visible { display: flex; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .confidence-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .confidence-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; background: var(--accent2); }
+  .confidence-fill.low { background: var(--red); }
+
+  .field-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+
+  /* FIX: hidden by default, shown after OCR or manual focus */
+  .ocr-field-wrap { display: none; margin-bottom: 14px; }
+  .ocr-field-wrap.visible { display: block; }
+
+  #ocr-text {
+    width: 100%; min-height: 80px; padding: 14px;
+    border-radius: var(--radius); border: 1px solid var(--border);
+    background: var(--bg2); color: var(--text);
+    font-family: 'Shippori Mincho', serif; font-size: 22px;
+    line-height: 1.7; resize: none; outline: none;
+    transition: border-color 0.2s;
+  }
+  #ocr-text:focus { border-color: var(--border-strong); }
+  #ocr-text::placeholder { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-dim); }
+
+  .results-card {
+    display: none; border-radius: var(--radius-lg);
+    border: 1px solid var(--border-strong);
+    background: var(--bg2); overflow: hidden;
+    margin-bottom: 16px; animation: fadeIn 0.3s ease;
+  }
+  .results-card.visible { display: block; }
+
+  .result-section {
+    padding: 16px 18px; border-bottom: 1px solid var(--border); position: relative;
+  }
+  .result-section:last-child { border-bottom: none; }
+
+  .result-label { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+  .result-kanji { font-family: 'Shippori Mincho', serif; font-size: 28px; font-weight: 500; line-height: 1.5; color: var(--text); word-break: break-all; padding-right: 36px; }
+  .result-kana  { font-family: 'Noto Serif JP', serif; font-size: 20px; font-weight: 300; line-height: 1.6; color: var(--accent); padding-right: 36px; }
+  .result-romaji { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 300; line-height: 1.6; color: var(--accent2); letter-spacing: 0.03em; padding-right: 36px; }
+
+  .copy-btn {
+    position: absolute; top: 14px; right: 14px;
+    width: 28px; height: 28px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--bg3);
+    color: var(--text-dim);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .copy-btn:active { transform: scale(0.9); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+  .token-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 18px; }
+  .token-chip {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 12px; border-radius: 10px;
+    background: var(--bg3); border: 1px solid var(--border);
+  }
+  .chip-kanji { font-family: 'Shippori Mincho', serif; font-size: 18px; }
+  .chip-kana  { font-family: 'Noto Serif JP', serif; font-size: 11px; color: var(--accent); }
+  .chip-romaji { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--accent2); letter-spacing: 0.05em; }
+
+  .loading-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(15,17,23,0.85); border-radius: var(--radius-lg);
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; z-index: 10;
+  }
+  .loading-overlay.visible { display: flex; }
+  .loading-overlay .spinner { width: 28px; height: 28px; border-width: 3px; }
+  .loading-overlay span { font-size: 11px; letter-spacing: 0.15em; color: var(--text-dim); }
+
+  /* History */
+  .history-empty { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 12px; letter-spacing: 0.1em; }
+  .history-empty .big-kanji { font-family: 'Shippori Mincho', serif; font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.2; }
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  .history-item-wrap { position: relative; overflow: hidden; border-radius: var(--radius); }
+  .history-delete-bg {
+    position: absolute; inset: 0; background: var(--red);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 20px; color: white; font-size: 11px; letter-spacing: 0.1em;
+    opacity: 0; border-radius: var(--radius); pointer-events: none;
+  }
+  .history-item {
+    padding: 14px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg2);
+    cursor: pointer; position: relative; will-change: transform;
+  }
+  .history-kanji { font-family: 'Shippori Mincho', serif; font-size: 20px; margin-bottom: 4px; }
+  .history-sub { display: flex; gap: 10px; align-items: baseline; }
+  .history-kana   { font-family: 'Noto Serif JP', serif; font-size: 13px; color: var(--accent); }
+  .history-romaji { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent2); }
+  .history-time   { position: absolute; top: 14px; right: 14px; font-size: 9px; color: var(--text-dim); letter-spacing: 0.05em; }
+  .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .history-title  { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
+  .clear-btn {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--red); cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; border: 1px solid transparent;
+    background: none; font-family: 'DM Mono', monospace; opacity: 0.7; transition: opacity 0.2s;
+  }
+  .clear-btn:active { opacity: 1; }
+
+  /* About */
+  .about-section { margin-bottom: 24px; }
+  .about-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .about-text { font-size: 13px; line-height: 1.8; color: var(--text-mid); letter-spacing: 0.02em; }
+  .about-text p { margin-bottom: 10px; }
+  .tech-list { display: flex; flex-direction: column; gap: 8px; }
+  .tech-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: var(--radius); background: var(--bg2); border: 1px solid var(--border); }
+  .tech-name { font-size: 12px; color: var(--text); }
+  .tech-role { font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg3); border: 1px solid var(--border-strong);
+    color: var(--text); padding: 10px 18px; border-radius: 50px;
+    font-size: 12px; letter-spacing: 0.05em;
+    opacity: 0; transition: all 0.3s ease;
+    pointer-events: none; white-space: nowrap; z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -691,48 +320,48 @@
     <span class="logo-roman">Kanji Lens</span>
   </div>
   <div class="header-actions">
-    <div class="icon-btn" id="offline-indicator" title="Offline status">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M1 6s4-4 11-4 11 4 11 4"/>
-        <path d="M5 10s2.5-2.5 7-2.5 7 2.5 7 2.5"/>
-        <path d="M9 14s1-1 3-1 3 1 3 1"/>
-        <circle cx="12" cy="18" r="1" fill="currentColor"/>
-      </svg>
+    <div id="init-status">
+      <span class="dot pulse" id="init-dot"></span>
+      <span id="init-label">Loading…</span>
     </div>
   </div>
 </header>
 
 <nav>
   <div class="tab active" data-screen="scan">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:5px"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12h10M12 7v10"/></svg>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12h10M12 7v10"/></svg>
     Scan
   </div>
   <div class="tab" data-screen="history">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:5px"><path d="M3 12a9 9 0 1 1 18 0A9 9 0 0 1 3 12z"/><path d="M12 7v5l3 3"/></svg>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M3 12a9 9 0 1 1 18 0A9 9 0 0 1 3 12z"/><path d="M12 7v5l3 3"/></svg>
     History
   </div>
   <div class="tab" data-screen="about">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
     About
   </div>
 </nav>
 
 <main>
-
-  <!-- ── SCAN ── -->
+  <!-- SCAN -->
   <div class="screen active" id="screen-scan">
+
+    <div class="https-warn" id="https-warn">
+      ⚠️ Camera requires HTTPS. Use the Upload button instead, or host on GitHub Pages (HTTPS is automatic).
+    </div>
+
     <div class="capture-zone" id="capture-zone">
       <canvas id="preview-canvas"></canvas>
       <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
-        <span>Reading kanji…</span>
+        <span id="loading-label">Reading kanji…</span>
       </div>
       <div class="capture-placeholder" id="capture-placeholder">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
           <circle cx="12" cy="13" r="3"/>
         </svg>
-        <span>Tap to capture</span>
+        <span>Tap to capture or upload</span>
       </div>
       <div class="corner-decorator tl"></div>
       <div class="corner-decorator tr"></div>
@@ -740,7 +369,7 @@
       <div class="corner-decorator br"></div>
     </div>
 
-    <input type="file" id="camera-input" accept="image/*" capture="environment">
+    <input type="file" id="camera-input" accept="image/*">
 
     <div class="btn-row">
       <button class="btn" id="btn-camera">
@@ -762,8 +391,10 @@
       <span id="confidence-pct" style="font-size:10px;color:var(--text-dim)">—</span>
     </div>
 
-    <div class="field-label" id="ocr-label" style="display:none">Detected text — edit to correct</div>
-    <textarea id="ocr-text" placeholder="Paste or type kanji here…" rows="3"></textarea>
+    <div class="ocr-field-wrap" id="ocr-field-wrap">
+      <div class="field-label">Detected text — edit to correct</div>
+      <textarea id="ocr-text" placeholder="Paste or type kanji here…" rows="3"></textarea>
+    </div>
 
     <div class="btn-row">
       <button class="btn primary" id="btn-convert" disabled>
@@ -779,80 +410,73 @@
     <div class="results-card" id="results-card">
       <div class="result-section">
         <div class="result-label">Original</div>
-        <div class="result-kanji" id="result-kanji">—</div>
+        <div class="result-kanji" id="result-kanji"></div>
         <button class="copy-btn" data-target="kanji" title="Copy">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
       </div>
       <div class="result-section">
         <div class="result-label">Hiragana</div>
-        <div class="result-kana" id="result-kana">—</div>
+        <div class="result-kana" id="result-kana"></div>
         <button class="copy-btn" data-target="kana" title="Copy">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
       </div>
       <div class="result-section">
         <div class="result-label">Romaji</div>
-        <div class="result-romaji" id="result-romaji">—</div>
+        <div class="result-romaji" id="result-romaji"></div>
         <button class="copy-btn" data-target="romaji" title="Copy">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
       </div>
       <div class="token-chips" id="token-chips"></div>
     </div>
+
   </div>
 
-  <!-- ── HISTORY ── -->
+  <!-- HISTORY -->
   <div class="screen" id="screen-history">
     <div class="history-header">
       <span class="history-title">Translation History</span>
       <button class="clear-btn" id="btn-clear-history">Clear All</button>
     </div>
-    <div id="history-list"></div>
+    <div class="history-list" id="history-list"></div>
   </div>
 
-  <!-- ── ABOUT ── -->
+  <!-- ABOUT -->
   <div class="screen" id="screen-about">
     <div class="about-section">
       <div class="about-title">About</div>
       <div class="about-text">
         <p>漢字レンズ translates kanji from photos into hiragana and romaji — fully offline after the first load.</p>
-        <p>Capture or upload a photo, correct any OCR errors, then tap Convert. Results are saved locally on your device.</p>
+        <p>Capture or upload a photo, correct any OCR errors, then tap Convert. Results are saved locally.</p>
+      </div>
+    </div>
+    <div class="about-section">
+      <div class="about-title">Camera &amp; File Access</div>
+      <div class="about-text">
+        <p><strong style="color:var(--text)">HTTPS required for camera.</strong> GitHub Pages provides HTTPS automatically — camera will work once deployed.</p>
+        <p>On iOS: allow camera when prompted by Safari. On Android: tap Allow when Chrome asks. If previously denied, go to browser Settings → Site Settings → Camera to re-enable.</p>
+        <p>File upload (photo library) works on both platforms without special permissions and does not require HTTPS.</p>
       </div>
     </div>
     <div class="about-section">
       <div class="about-title">How It Works</div>
+      <div class="about-text"><p>All processing is local — no data is ever sent to a server.</p></div>
       <div class="tech-list">
-        <div class="tech-item">
-          <span class="tech-name">Tesseract.js</span>
-          <span class="tech-role">OCR — reads kanji from images</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-name">kuromoji.js</span>
-          <span class="tech-role">Morphological analysis — kanji → kana</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-name">wanakana.js</span>
-          <span class="tech-role">Kana conversion — hiragana → romaji</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-name">Service Worker</span>
-          <span class="tech-role">Caches all assets for offline use</span>
-        </div>
+        <div class="tech-item"><span class="tech-name">Tesseract.js</span><span class="tech-role">OCR — reads kanji from images</span></div>
+        <div class="tech-item"><span class="tech-name">kuromoji.js</span><span class="tech-role">Morphological analysis — kanji → kana</span></div>
+        <div class="tech-item"><span class="tech-name">wanakana.js</span><span class="tech-role">Kana → romaji conversion</span></div>
+        <div class="tech-item"><span class="tech-name">Service Worker</span><span class="tech-role">Caches all assets for offline use</span></div>
       </div>
     </div>
     <div class="about-section">
-      <div class="about-title">Privacy</div>
+      <div class="about-title">Tips for Better OCR</div>
       <div class="about-text">
-        <p>No data ever leaves your device. All processing happens locally in your browser. History is stored in localStorage and can be cleared at any time.</p>
-      </div>
-    </div>
-    <div class="about-section">
-      <div class="about-title">Tips</div>
-      <div class="about-text">
-        <p>• Good lighting and a flat, non-glare surface improve OCR accuracy significantly.</p>
-        <p>• The editable text field lets you fix any misread characters before converting.</p>
-        <p>• Works best on printed text (menus, signs, books). Handwriting has lower accuracy.</p>
+        <p>• Good lighting and a flat, non-glare surface improve accuracy significantly.</p>
+        <p>• Printed text (menus, signs, books) works best. Handwriting is less reliable.</p>
+        <p>• If confidence is low, edit the detected text before converting.</p>
+        <p>• Crop tightly around the text for best results.</p>
       </div>
     </div>
   </div>
@@ -861,63 +485,106 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ── SCRIPTS ── -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.js"></script>
 <script src="https://unpkg.com/wanakana@5.3.1/umd/wanakana.min.js"></script>
 
 <script>
-// ────────────────────────────────────────────────
-//  STATE
-// ────────────────────────────────────────────────
-let currentImage = null;
-let tokenizer = null;
-let lastResult = null;
+'use strict';
 
 const HISTORY_KEY = 'kanji-lens-history';
+let tokenizer      = null;
+let tesseractWorker = null;
+let kuromojiReady  = false;
+let tesseractReady = false;
 
-// ────────────────────────────────────────────────
-//  KUROMOJI INIT
-// ────────────────────────────────────────────────
-kuromoji.builder({ dicPath: 'https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict' }).build((err, t) => {
-  if (!err) {
-    tokenizer = t;
-    console.log('kuromoji ready');
-  } else {
-    console.warn('kuromoji failed to load:', err);
-  }
-});
-
-// ────────────────────────────────────────────────
-//  ELEMENTS
-// ────────────────────────────────────────────────
-const captureZone     = document.getElementById('capture-zone');
-const cameraInput     = document.getElementById('camera-input');
-const previewCanvas   = document.getElementById('preview-canvas');
-const loadingOverlay  = document.getElementById('loading-overlay');
+// ── ELEMENTS ──
+const captureZone        = document.getElementById('capture-zone');
+const cameraInput        = document.getElementById('camera-input');
+const previewCanvas      = document.getElementById('preview-canvas');
+const loadingOverlay     = document.getElementById('loading-overlay');
+const loadingLabel       = document.getElementById('loading-label');
 const capturePlaceholder = document.getElementById('capture-placeholder');
-const ocrStatus       = document.getElementById('ocr-status');
-const ocrSpinner      = document.getElementById('ocr-spinner');
-const ocrStatusText   = document.getElementById('ocr-status-text');
-const confidenceFill  = document.getElementById('confidence-fill');
-const confidencePct   = document.getElementById('confidence-pct');
-const ocrText         = document.getElementById('ocr-text');
-const ocrLabel        = document.getElementById('ocr-label');
-const btnConvert      = document.getElementById('btn-convert');
-const btnClear        = document.getElementById('btn-clear');
-const btnCamera       = document.getElementById('btn-camera');
-const btnUpload       = document.getElementById('btn-upload');
-const resultsCard     = document.getElementById('results-card');
-const resultKanji     = document.getElementById('result-kanji');
-const resultKana      = document.getElementById('result-kana');
-const resultRomaji    = document.getElementById('result-romaji');
-const tokenChips      = document.getElementById('token-chips');
-const historyList     = document.getElementById('history-list');
-const toast           = document.getElementById('toast');
+const ocrStatus          = document.getElementById('ocr-status');
+const ocrSpinner         = document.getElementById('ocr-spinner');
+const ocrStatusText      = document.getElementById('ocr-status-text');
+const confidenceFill     = document.getElementById('confidence-fill');
+const confidencePct      = document.getElementById('confidence-pct');
+const ocrFieldWrap       = document.getElementById('ocr-field-wrap');
+const ocrText            = document.getElementById('ocr-text');
+const btnConvert         = document.getElementById('btn-convert');
+const btnClear           = document.getElementById('btn-clear');
+const btnCamera          = document.getElementById('btn-camera');
+const btnUpload          = document.getElementById('btn-upload');
+const resultsCard        = document.getElementById('results-card');
+const resultKanji        = document.getElementById('result-kanji');
+const resultKana         = document.getElementById('result-kana');
+const resultRomaji       = document.getElementById('result-romaji');
+const tokenChips         = document.getElementById('token-chips');
+const historyListEl      = document.getElementById('history-list');
+const toastEl            = document.getElementById('toast');
+const initStatus         = document.getElementById('init-status');
+const initDot            = document.getElementById('init-dot');
+const initLabel          = document.getElementById('init-label');
+const httpsWarn          = document.getElementById('https-warn');
 
-// ────────────────────────────────────────────────
-//  TABS
-// ────────────────────────────────────────────────
+// ── HTTPS CHECK ──
+const isSecure = location.protocol === 'https:' ||
+                 location.hostname === 'localhost' ||
+                 location.hostname === '127.0.0.1';
+if (!isSecure) {
+  httpsWarn.classList.add('visible');
+  btnCamera.disabled = true;
+}
+
+// ── INIT STATUS ──
+function checkBothReady() {
+  if (kuromojiReady && tesseractReady) {
+    initStatus.classList.add('ready');
+    initDot.classList.remove('pulse');
+    initLabel.textContent = 'Ready';
+  }
+}
+
+// FIX: defer kuromoji to avoid blocking first paint
+setTimeout(() => {
+  kuromoji.builder({
+    dicPath: 'https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/'
+  }).build((err, t) => {
+    if (err) {
+      console.error('kuromoji:', err);
+      setInitError('Dict error');
+      return;
+    }
+    tokenizer = t;
+    kuromojiReady = true;
+    checkBothReady();
+  });
+}, 0);
+
+// FIX: pre-warm a persistent Tesseract worker so first scan isn't cold
+async function initTesseract() {
+  try {
+    tesseractWorker = await Tesseract.createWorker('jpn', 1, {
+      logger: () => {} // suppress verbose logs
+    });
+    tesseractReady = true;
+    checkBothReady();
+  } catch (err) {
+    console.error('Tesseract:', err);
+    setInitError('OCR error');
+  }
+}
+
+function setInitError(msg) {
+  initStatus.classList.add('error');
+  initDot.classList.remove('pulse');
+  initLabel.textContent = msg;
+}
+
+setTimeout(initTesseract, 50);
+
+// ── TABS ──
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -928,270 +595,249 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// ────────────────────────────────────────────────
-//  CAMERA / UPLOAD
-// ────────────────────────────────────────────────
+// ── CAPTURE / UPLOAD ──
 captureZone.addEventListener('click', () => {
-  cameraInput.setAttribute('capture', 'environment');
-  cameraInput.click();
+  if (!captureZone.classList.contains('has-image')) triggerCamera();
 });
-
-btnCamera.addEventListener('click', (e) => {
-  e.stopPropagation();
-  cameraInput.setAttribute('capture', 'environment');
-  cameraInput.click();
-});
-
+btnCamera.addEventListener('click', (e) => { e.stopPropagation(); triggerCamera(); });
 btnUpload.addEventListener('click', (e) => {
   e.stopPropagation();
   cameraInput.removeAttribute('capture');
   cameraInput.click();
 });
 
+function triggerCamera() {
+  cameraInput.setAttribute('capture', 'environment');
+  cameraInput.click();
+}
+
 cameraInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  await loadImage(file);
   cameraInput.value = '';
+  await loadImage(file);
 });
 
 async function loadImage(file) {
   const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.onload = async () => {
-    // Draw to canvas with preprocessing
-    const canvas = previewCanvas;
-    const ctx = canvas.getContext('2d');
-
-    const MAX = 1200;
-    let w = img.naturalWidth, h = img.naturalHeight;
-    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-
-    canvas.width = w;
-    canvas.height = h;
-    ctx.drawImage(img, 0, 0, w, h);
-
-    // Preprocessing: boost contrast slightly
-    const imageData = ctx.getImageData(0, 0, w, h);
-    preprocessImage(imageData);
-    ctx.putImageData(imageData, 0, 0);
-
-    currentImage = canvas.toDataURL('image/jpeg', 0.92);
-    canvas.classList.add('visible');
-    capturePlaceholder.style.display = 'none';
-    captureZone.classList.add('has-image');
-
-    URL.revokeObjectURL(url);
-
-    // Auto-trigger OCR
-    await runOCR(currentImage);
-  };
-  img.src = url;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = async () => {
+      const ctx = previewCanvas.getContext('2d');
+      const MAX = 1200;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > w && h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      previewCanvas.width  = w;
+      previewCanvas.height = h;
+      // drawImage scales to canvas bounds, so the image fills the canvas correctly
+      ctx.drawImage(img, 0, 0, w, h);
+      preprocessCanvas(ctx, w, h);
+      previewCanvas.classList.add('visible');
+      capturePlaceholder.style.display = 'none';
+      captureZone.classList.add('has-image');
+      URL.revokeObjectURL(url);
+      await runOCR(previewCanvas);
+      resolve();
+    };
+    img.onerror = () => { showToast('Could not load image'); URL.revokeObjectURL(url); resolve(); };
+    img.src = url;
+  });
 }
 
-function preprocessImage(imageData) {
-  // Grayscale + mild contrast boost for OCR
-  const d = imageData.data;
+function preprocessCanvas(ctx, w, h) {
+  const id = ctx.getImageData(0, 0, w, h);
+  const d = id.data;
   for (let i = 0; i < d.length; i += 4) {
-    // Convert to grayscale with luminance weights
-    let lum = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
-    // Contrast stretch (mild)
-    lum = Math.min(255, Math.max(0, (lum - 128) * 1.2 + 128));
-    // Keep color but boost contrast
-    d[i]   = Math.min(255, Math.max(0, (d[i]   - 128) * 1.2 + 128));
-    d[i+1] = Math.min(255, Math.max(0, (d[i+1] - 128) * 1.2 + 128));
-    d[i+2] = Math.min(255, Math.max(0, (d[i+2] - 128) * 1.2 + 128));
+    d[i]   = Math.min(255, Math.max(0, (d[i]   - 128) * 1.25 + 128));
+    d[i+1] = Math.min(255, Math.max(0, (d[i+1] - 128) * 1.25 + 128));
+    d[i+2] = Math.min(255, Math.max(0, (d[i+2] - 128) * 1.25 + 128));
   }
+  ctx.putImageData(id, 0, 0);
 }
 
-// ────────────────────────────────────────────────
-//  OCR
-// ────────────────────────────────────────────────
-async function runOCR(imageData) {
+// ── OCR ──
+async function runOCR(canvas) {
   ocrStatus.classList.add('visible');
-  loadingOverlay.classList.add('visible');
   ocrSpinner.style.display = 'block';
   ocrStatusText.textContent = 'Scanning…';
   confidenceFill.style.width = '0%';
+  confidenceFill.classList.remove('low');
   confidencePct.textContent = '—';
-  ocrLabel.style.display = 'none';
+  ocrFieldWrap.classList.remove('visible');
   ocrText.value = '';
   btnConvert.disabled = true;
-  btnClear.disabled = true;
+  btnClear.disabled = false;
   resultsCard.classList.remove('visible');
+  loadingOverlay.classList.add('visible');
+
+  // Wait for worker if not yet ready (e.g. slow connection)
+  if (!tesseractWorker) {
+    loadingLabel.textContent = 'Initializing OCR…';
+    try { await waitFor(() => tesseractWorker !== null, 15000); }
+    catch { showToast('OCR timed out'); loadingOverlay.classList.remove('visible'); return; }
+  }
+  loadingLabel.textContent = 'Reading kanji…';
 
   try {
-    const result = await Tesseract.recognize(imageData, 'jpn', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          const pct = Math.round((m.progress || 0) * 100);
-          ocrStatusText.textContent = `Recognizing… ${pct}%`;
-          confidenceFill.style.width = pct + '%';
-        }
-      }
-    });
+    // FIX: pass canvas element directly — avoids dataURL encoding overhead
+    const result = await tesseractWorker.recognize(canvas);
 
-    const text = result.data.text.trim().replace(/\s+/g, '');
+    // FIX: preserve meaningful spaces; strip only noise characters
+    const text = result.data.text
+      .replace(/\r?\n/g, ' ')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')   // zero-width chars
+      .replace(/[^\u3000-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u3000-\u303F\s]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
     const conf = result.data.confidence;
-
     ocrSpinner.style.display = 'none';
-    confidenceFill.style.width = conf + '%';
+    confidenceFill.style.width = Math.min(100, conf) + '%';
     confidencePct.textContent = Math.round(conf) + '%';
 
     if (conf < 40) {
       confidenceFill.classList.add('low');
       ocrStatusText.textContent = `Low confidence (${Math.round(conf)}%) — please edit`;
     } else {
-      confidenceFill.classList.remove('low');
       ocrStatusText.textContent = `Scanned — confidence ${Math.round(conf)}%`;
     }
 
     ocrText.value = text;
-    ocrLabel.style.display = 'block';
-    btnConvert.disabled = !text;
-    btnClear.disabled = false;
+    ocrFieldWrap.classList.add('visible');
+    btnConvert.disabled = !text.trim();
 
   } catch (err) {
     console.error('OCR error:', err);
-    ocrStatusText.textContent = 'OCR failed — type kanji manually';
     ocrSpinner.style.display = 'none';
-    ocrLabel.style.display = 'block';
-    btnClear.disabled = false;
+    ocrStatusText.textContent = 'OCR failed — type kanji manually';
+    ocrFieldWrap.classList.add('visible');
   }
 
   loadingOverlay.classList.remove('visible');
+  loadingLabel.textContent = 'Reading kanji…';
 }
 
-// ────────────────────────────────────────────────
-//  CONVERT
-// ────────────────────────────────────────────────
+function waitFor(fn, timeout) {
+  return new Promise((resolve, reject) => {
+    const t0 = Date.now();
+    (function check() {
+      if (fn()) return resolve();
+      if (Date.now() - t0 > timeout) return reject();
+      setTimeout(check, 100);
+    })();
+  });
+}
+
+// ── CONVERT ──
 btnConvert.addEventListener('click', () => {
   const text = ocrText.value.trim();
-  if (!text) return;
-  convert(text);
+  if (text) convert(text);
 });
 
 ocrText.addEventListener('input', () => {
-  btnConvert.disabled = !ocrText.value.trim();
-  btnClear.disabled = !ocrText.value.trim();
+  const has = !!ocrText.value.trim();
+  btnConvert.disabled = !has;
+  btnClear.disabled = false;
+});
+
+// Allow manual entry without an image
+ocrText.addEventListener('focus', () => {
+  ocrFieldWrap.classList.add('visible');
 });
 
 function convert(text) {
-  if (!tokenizer) {
-    showToast('Dictionary still loading…');
-    return;
-  }
+  if (!tokenizer) { showToast('Dictionary loading…'); return; }
 
   const tokens = tokenizer.tokenize(text);
-
   let kana = '';
-  let tokenData = [];
+  const tokenData = [];
 
   for (const tok of tokens) {
-    const reading = tok.reading || tok.surface_form;
-    kana += reading;
-
-    const romaji = wanakana.toRomaji(reading);
-    tokenData.push({
-      surface: tok.surface_form,
-      kana: reading,
-      romaji: romaji
-    });
+    // kuromoji returns readings in katakana — convert to hiragana
+    const raw = tok.reading || tok.surface_form;
+    const hira = wanakana.toHiragana(raw);
+    kana += hira;
+    tokenData.push({ surface: tok.surface_form, kana: hira, romaji: wanakana.toRomaji(hira) });
   }
 
   const romaji = wanakana.toRomaji(kana);
 
-  resultKanji.textContent = text;
-  resultKana.textContent  = kana;
+  // FIX: textContent only — no innerHTML for user-derived data
+  resultKanji.textContent  = text;
+  resultKana.textContent   = kana;
   resultRomaji.textContent = romaji;
   resultsCard.classList.add('visible');
 
-  // Token chips
   tokenChips.innerHTML = '';
   for (const t of tokenData) {
     if (!t.surface.trim()) continue;
     const chip = document.createElement('div');
     chip.className = 'token-chip';
-    chip.innerHTML = `
-      <span class="chip-kanji">${t.surface}</span>
-      <span class="chip-kana">${t.kana}</span>
-      <span class="chip-romaji">${t.romaji}</span>
-    `;
+    const k = document.createElement('span'); k.className = 'chip-kanji'; k.textContent = t.surface;
+    const h = document.createElement('span'); h.className = 'chip-kana';  h.textContent = t.kana;
+    const r = document.createElement('span'); r.className = 'chip-romaji';r.textContent = t.romaji;
+    chip.append(k, h, r);
     tokenChips.appendChild(chip);
   }
 
-  lastResult = { kanji: text, kana, romaji, ts: Date.now() };
-  saveHistory(lastResult);
-
+  const entry = { id: Date.now(), kanji: text, kana, romaji, ts: Date.now() };
+  saveHistory(entry);
   resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ────────────────────────────────────────────────
-//  CLEAR
-// ────────────────────────────────────────────────
-btnClear.addEventListener('click', () => {
+// ── CLEAR ──
+btnClear.addEventListener('click', resetScan);
+
+function resetScan() {
   ocrText.value = '';
   btnConvert.disabled = true;
   btnClear.disabled = true;
   resultsCard.classList.remove('visible');
   ocrStatus.classList.remove('visible');
-  ocrLabel.style.display = 'none';
+  ocrFieldWrap.classList.remove('visible');
+  confidenceFill.classList.remove('low');
   previewCanvas.classList.remove('visible');
   capturePlaceholder.style.display = 'flex';
   captureZone.classList.remove('has-image');
-  currentImage = null;
-  lastResult = null;
-  confidenceFill.classList.remove('low');
-});
+}
 
-// ────────────────────────────────────────────────
-//  COPY BUTTONS
-// ────────────────────────────────────────────────
+// ── COPY ──
 document.querySelectorAll('.copy-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const target = btn.dataset.target;
-    let text = '';
-    if (target === 'kanji')  text = resultKanji.textContent;
-    if (target === 'kana')   text = resultKana.textContent;
-    if (target === 'romaji') text = resultRomaji.textContent;
-
-    navigator.clipboard.writeText(text).then(() => {
-      btn.classList.add('copied');
-      showToast('Copied!');
-      setTimeout(() => btn.classList.remove('copied'), 1500);
-    });
+    const map = { kanji: resultKanji, kana: resultKana, romaji: resultRomaji };
+    const el = map[btn.dataset.target];
+    if (!el) return;
+    navigator.clipboard.writeText(el.textContent)
+      .then(() => { btn.classList.add('copied'); showToast('Copied!'); setTimeout(() => btn.classList.remove('copied'), 1500); })
+      .catch(() => showToast('Copy failed'));
   });
 });
 
-// ────────────────────────────────────────────────
-//  HISTORY
-// ────────────────────────────────────────────────
+// ── HISTORY ──
 function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
-  catch { return []; }
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
-
 function saveHistory(entry) {
-  const h = getHistory();
-  h.unshift(entry);
-  const trimmed = h.slice(0, 100);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+  const h = getHistory(); h.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 100)));
 }
 
 function renderHistory() {
   const h = getHistory();
+  historyListEl.innerHTML = '';
   if (!h.length) {
-    historyList.innerHTML = `<div class="history-empty">
-      <span class="big-kanji">日</span>
-      No history yet. Scan some kanji!
-    </div>`;
+    const empty = document.createElement('div');
+    empty.className = 'history-empty';
+    const big = document.createElement('span'); big.className = 'big-kanji'; big.textContent = '日';
+    empty.appendChild(big);
+    empty.appendChild(document.createTextNode('No history yet. Scan some kanji!'));
+    historyListEl.appendChild(empty);
     return;
   }
 
-  historyList.innerHTML = '';
-  h.forEach((entry, idx) => {
+  h.forEach((entry) => {
     const wrap = document.createElement('div');
     wrap.className = 'history-item-wrap';
 
@@ -1201,72 +847,68 @@ function renderHistory() {
 
     const item = document.createElement('div');
     item.className = 'history-item';
-    item.style.transition = 'transform 0.25s ease, opacity 0.2s';
 
+    const kEl = document.createElement('div'); kEl.className = 'history-kanji'; kEl.textContent = entry.kanji;
+    const sub = document.createElement('div'); sub.className = 'history-sub';
+    const hEl = document.createElement('span'); hEl.className = 'history-kana';   hEl.textContent = entry.kana;
+    const rEl = document.createElement('span'); rEl.className = 'history-romaji'; rEl.textContent = entry.romaji;
+    const tEl = document.createElement('span'); tEl.className = 'history-time';
     const ts = new Date(entry.ts);
-    const timeStr = ts.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) +
-                    ' ' + ts.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    tEl.textContent = ts.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) +
+                      ' ' + ts.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 
-    item.innerHTML = `
-      <div class="history-kanji">${entry.kanji}</div>
-      <div class="history-sub">
-        <span class="history-kana">${entry.kana}</span>
-        <span class="history-romaji">${entry.romaji}</span>
-      </div>
-      <span class="history-time">${timeStr}</span>
-    `;
+    sub.append(hEl, rEl);
+    item.append(kEl, sub, tEl);
 
-    // Tap to load back
     item.addEventListener('click', () => {
       ocrText.value = entry.kanji;
+      ocrFieldWrap.classList.add('visible');
       btnConvert.disabled = false;
       btnClear.disabled = false;
-      // Switch to scan tab
       document.querySelector('[data-screen="scan"]').click();
       convert(entry.kanji);
     });
 
-    // Swipe to delete
-    let startX = 0;
-    let currentX = 0;
-    let swiping = false;
-    const THRESHOLD = 80;
+    // Swipe-to-delete using stable entry.id
+    let startX = 0, currentX = 0, isSwiping = false;
+    const THRESH = 80;
 
-    item.addEventListener('touchstart', (e) => {
-      startX = e.touches[0].clientX;
-      swiping = true;
+    item.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX; currentX = 0; isSwiping = true;
     }, { passive: true });
 
-    item.addEventListener('touchmove', (e) => {
-      if (!swiping) return;
+    item.addEventListener('touchmove', e => {
+      if (!isSwiping) return;
       currentX = e.touches[0].clientX - startX;
       if (currentX < 0) {
         item.style.transform = `translateX(${Math.max(currentX, -120)}px)`;
-        delBg.style.opacity = Math.min(1, -currentX / THRESHOLD);
+        delBg.style.opacity = String(Math.min(1, -currentX / THRESH));
       }
     }, { passive: true });
 
     item.addEventListener('touchend', () => {
-      swiping = false;
-      if (-currentX >= THRESHOLD) {
+      isSwiping = false;
+      if (-currentX >= THRESH) {
+        item.style.transition = 'transform 0.2s ease, opacity 0.2s';
         item.style.transform = 'translateX(-100%)';
         item.style.opacity = '0';
         setTimeout(() => {
-          const h2 = getHistory();
-          h2.splice(idx, 1);
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(h2));
+          // FIX: delete by stable id, not by array index
+          const updated = getHistory().filter(e => e.id !== entry.id);
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
           renderHistory();
-        }, 250);
+        }, 220);
       } else {
+        item.style.transition = 'transform 0.2s ease';
         item.style.transform = '';
         delBg.style.opacity = '0';
+        setTimeout(() => { item.style.transition = ''; }, 200);
       }
       currentX = 0;
     });
 
-    wrap.appendChild(delBg);
-    wrap.appendChild(item);
-    historyList.appendChild(wrap);
+    wrap.append(delBg, item);
+    historyListEl.appendChild(wrap);
   });
 }
 
@@ -1277,41 +919,19 @@ document.getElementById('btn-clear-history').addEventListener('click', () => {
   }
 });
 
-// ────────────────────────────────────────────────
-//  TOAST
-// ────────────────────────────────────────────────
+// ── TOAST ──
 let toastTimer;
 function showToast(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
 }
 
-// ────────────────────────────────────────────────
-//  ONLINE/OFFLINE STATUS
-// ────────────────────────────────────────────────
-const offlineIndicator = document.getElementById('offline-indicator');
-function updateOnlineStatus() {
-  if (navigator.onLine) {
-    offlineIndicator.style.color = '';
-    offlineIndicator.title = 'Online';
-  } else {
-    offlineIndicator.style.color = 'var(--red)';
-    offlineIndicator.title = 'Offline';
-    showToast('You\'re offline — app works locally!');
-  }
-}
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
-
-// ────────────────────────────────────────────────
-//  SERVICE WORKER
-// ────────────────────────────────────────────────
+// ── SERVICE WORKER ──
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(err => {
-    console.warn('SW registration failed:', err);
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW:', err));
   });
 }
 </script>
